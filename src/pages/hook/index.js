@@ -20,19 +20,34 @@ export const HookTest = (props) => {
 
     let interval = null;
 
-    useEffect(() => {
-        prevRef.current = i;
-    })
+    // useEffect 就好比是 componentDidMount componentDidUpdate componentWillUnmount 这三个函数的组合，会在每次渲染之后再次执行
+    // react 保证了每次运行 effect 的同时，DOM 都已经更新完毕。
+    // effect 不会阻塞浏览器的渲染
+    // effect 返回一个函数便模拟 componentWillUnmount 
+    // 第二个参数数组，依赖项，仅在这些值发生变化时，才触发effect，
+    /**
+     * 传递给 useEffect 的函数在每次渲染中都会有所不同，这是刻意为之的。
+     * 事实上这正是我们可以在 effect 中获取最新的 count 的值，而不用担心其过期的原因。
+     * 每次我们重新渲染，都会生成新的 effect，替换掉之前的。
+     * 某种意义上讲，effect 更像是渲染结果的一部分 —— 每个 effect “属于”一次特定的渲染。
+     */
 
     useEffect(() => {
-        // 异步数据获取
-        async function getData() {
-            let re = await getUserInfo();
-            console.log(re)
-            setUserInfo(re.data)
-        }
+        console.log('into effect set')
+        prevRef.current = i;
+    },[])
+
+    // 异步数据获取
+    async function getData() {
+        let re = await getUserInfo();
+        console.log(re)
+        setUserInfo(re.data)
+    }
+
+    useEffect(() => {
+        
         getData()
-    }, [currentCom])
+    }, [currentCom])  // 
 
     // let point = 0
     function setInter() {
@@ -66,11 +81,10 @@ export const HookTest = (props) => {
         console.log('into use call back count:' + count);
 
     }, [count])
-    debugger
 
     console.log('preRender')
 
-    // 当依赖发生变化时才重新计算
+    // 当依赖发生变化时才重新计算，只有在依赖项发生变化的时候才会重新计算，可以把一些高开销的操作放在这里面
     const memoVal = useMemo(() => {
         return Date.now()
     }, [count])
